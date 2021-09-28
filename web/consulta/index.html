@@ -1,0 +1,405 @@
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>IRPF</title>
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+        crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="row">
+
+            <h1 class="text-light">Bens e direitos</h1>
+
+            <h3 class="text-light">Ações</h3>
+
+            <table class="table table-dark table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">cód</th>
+                        <th scope="col">ticker</th>
+                        <th scope="col">CNPJ</th>
+                        <th scope="col">Discriminação</th>
+                        <th scope="col">Situação em 01/01/2020</th>
+                        <th scope="col">Situação em 31/12/2020</th>
+                    </tr>
+                </thead>
+                <tbody id="BensDireitosAcoes">
+
+                </tbody>
+            </table>
+
+            <h3 class="text-light">Créditos em Trânsito</h3>
+
+            <table class="table table-dark table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">cód</th>
+                        <th scope="col">Discriminação</th>
+                        <th scope="col">Situação em 01/01/2020</th>
+                        <th scope="col">Situação em 31/12/2020</th>
+                    </tr>
+                </thead>
+                <tbody id="BensDireitosCreditosEmTransito">
+
+                </tbody>
+            </table>
+            <div class="alert alert-danger" role="alert">
+                ATENÇÃO! Caso você já tenha recebido algum divendo ou JCP em 2021, não se esqueça de adiciona-lo também!
+                Para ambos utilize o código 99.
+            </div>
+
+
+            <h1 class="text-light">Rendimentos Isentos e Não Tributáveis</h1>
+
+            <h3 class="text-light">Lucro com a Venda de Ações SWING TRADE</h3>
+
+            <table class="table table-dark table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">cód</th>
+                        <th scope="col">Valor</th>
+                    </tr>
+                </thead>
+                <tbody id="LucroVendaAcoes">
+
+                </tbody>
+            </table>
+
+            <h1 class="text-light"> </h1>
+
+            <h3 class="text-light">Dividendos</h3>
+            <p class="text-light">Inserir conforme informe de rendimentos com o código 09</p>
+
+            <p class="text-light">Buscar dados da Empresa:</p>
+
+                <div class="form-row">
+                    <div class="col">
+                        <input type="text" id="tickerDividendo" placeholder="TICKER" class="form-control d-inline" style="width:40%;">
+                        <button onClick="buscarDadosEmpresa('dividendos')" class="form-control d-inline" style="width:20%; background-color: #8e62e3;">BUSCAR</button>
+                    </div>
+                </div>
+
+            <div id="cnpjDividendos">
+
+            </div>
+
+
+            <h1 class="text-light">Rendimentos Sujeitos a Tributação Exclusiva/Definitiva</h1>
+
+            <h3 class="text-light">Juros Sobre Capital Próprio</h3>
+            <p class="text-light">Inserir conforme informe de rendimentos com o código 10</p>
+            <p class="text-light">Buscar CNPJ:</p>
+            <p class="text-light">Buscar dados da Empresa:</p>
+
+                <div class="form-row">
+                    <div class="col">
+                        <input type="text" id="tickerJCP" placeholder="TICKER" class="form-control d-inline" style="width:40%;">
+                        <button onClick="buscarDadosEmpresa('jcp')" class="form-control d-inline" style="width:20%; background-color: #8e62e3;">BUSCAR</button>
+                    </div>
+                </div>
+
+            <div id="cnpjJCP">
+
+            </div>
+
+            <h1 class="text-light">Renda Variável</h1>
+
+            <h3 class="text-light">Prejuízos - Mercado à Vista - Operacões Comuns</h3>
+            <table class="table table-dark table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Mês</th>
+                        <th scope="col">Valor</th>
+                    </tr>
+                </thead>
+                <tbody id="PrejuizoVendaAcoes">
+
+                </tbody>
+            </table>
+            <div class="alert alert-info" role="alert">
+                Nos demais meses, preencha apenas com zero
+            </div>
+
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+    <script>
+
+
+        const tabelaBensDireitosAcoes = document.getElementById('BensDireitosAcoes')
+        const tabelaBensDireitosCreditosEmTransito = document.getElementById('BensDireitosCreditosEmTransito')
+        const tabelaLucrosVendaAcoes = document.getElementById('LucroVendaAcoes')
+        const tabelaPrejuizosVendaAcoes = document.getElementById('PrejuizoVendaAcoes')
+        const divDividendos = document.getElementById('cnpjDividendos')
+        const divJCP = document.getElementById('cnpjJCP')
+
+
+        const buscarDadosEmpresa = async (param) => {
+
+            const options = {
+                method: 'GET',
+                mode: 'cors',
+                cache: 'default'
+            }
+
+            if (param == "dividendos") {
+                let tickerDividendo = document.getElementById('tickerDividendo').value
+                const url = `http://localhost:3333/empresa/${tickerDividendo}`
+
+                fetch(url)
+                    .then((resp) => resp.json())
+                    .then((empresa) => {
+
+                        let div = document.createElement('div')
+                        div.classList.add("alert")
+                        div.classList.add("alert-info")
+                        div.setAttribute("role", "alert")
+                        let texto = `Empresa: ${empresa.empresa} CNPJ: ${empresa.cnpj}`
+                        let text = document.createTextNode(texto)
+                        div.appendChild(text)
+                        divDividendos.append(div)
+
+                    })
+            } else if (param == "jcp") {
+
+                let tickerJCP = document.getElementById('tickerJCP').value
+
+                const url = `http://localhost:3333/empresa/${tickerJCP}`
+
+                fetch(url)
+                    .then((resp) => resp.json())
+                    .then((empresa) => {
+
+                        let div = document.createElement('div')
+                        div.classList.add("alert")
+                        div.classList.add("alert-info")
+                        div.setAttribute("role", "alert")
+                        let texto = `Empresa: ${empresa.empresa} CNPJ: ${empresa.cnpj}`
+                        let text = document.createTextNode(texto)
+                        div.appendChild(text)
+                        divJCP.append(div)
+
+                    })
+            }
+
+        }
+
+
+        const buscaInformacoesAcoes = async () => {
+
+            const options = {
+                method: 'GET',
+                mode: 'cors',
+                cache: 'default'
+            }
+
+            const url = `http://localhost:3333/irpf/bensdireitos/acoes`
+
+            fetch(url)
+                .then((resp) => resp.json())
+                .then((acoes) => {
+
+
+                    acoes.forEach(async acao => {
+
+
+                        const url = `http://localhost:3333/empresa/${acao.ticker}`
+
+                        fetch(url)
+                            .then((resp) => resp.json())
+                            .then((dadosEmpresa) => {
+
+                                let td
+                                let text
+                                let linha
+
+                                linha = document.createElement('tr')
+                                td = document.createElement('td')
+                                text = document.createTextNode(acao.operacao)
+                                td.appendChild(text)
+                                linha.appendChild(td)
+
+                                td = document.createElement('td')
+                                text = document.createTextNode(acao.ticker)
+                                td.appendChild(text)
+                                linha.appendChild(td)
+
+                                td = document.createElement('td')
+                                text = document.createTextNode(dadosEmpresa.cnpj)
+                                td.appendChild(text)
+                                linha.appendChild(td)
+
+                                concordancia = acao.resultado > 1 ? 'ações' : 'ação'
+
+                                td = document.createElement('td')
+                                text = document.createTextNode(`${acao.resultado} ${concordancia} da Empresa ${dadosEmpresa.empresa}, código de negociação ${acao.ticker}. Custo Total de  R$ ${acao.valorTotal}`)
+                                td.appendChild(text)
+                                linha.appendChild(td)
+
+                                td = document.createElement('td')
+                                text = document.createTextNode('0.00')
+                                td.appendChild(text)
+                                linha.appendChild(td)
+
+                                td = document.createElement('td')
+                                text = document.createTextNode(acao.valorTotal)
+                                td.appendChild(text)
+                                linha.appendChild(td)
+
+                                tabelaBensDireitosAcoes.append(linha)
+
+                            })
+
+                    })
+
+                })
+
+        }
+
+        const buscaInformacoesCreditosEmTransito = async () => {
+
+            const options = {
+                method: 'GET',
+                mode: 'cors',
+                cache: 'default'
+            }
+
+            const url = `http://localhost:3333/irpf/bensdireitos/proventos`
+
+            fetch(url)
+                .then((resp) => resp.json())
+                .then((proventos) => {
+
+
+                    proventos.forEach(async provento => {
+
+
+                        const url = `http://localhost:3333/empresa/${provento.ticker}`
+
+                        fetch(url)
+                            .then((resp) => resp.json())
+                            .then((dadosEmpresa) => {
+
+                                let td
+                                let text
+                                let linha
+
+                                linha = document.createElement('tr')
+                                td = document.createElement('td')
+                                text = document.createTextNode(provento.operacao)
+                                td.appendChild(text)
+                                linha.appendChild(td)
+
+                                td = document.createElement('td')
+                                text = document.createTextNode(`Créditos em Trânsito -  ${provento.tipo}. Empresa ${dadosEmpresa.empresa},CNPJ ${dadosEmpresa.cnpj}. Valor Total de  R$ ${provento.total}`)
+                                td.appendChild(text)
+                                linha.appendChild(td)
+
+                                td = document.createElement('td')
+                                text = document.createTextNode('0.00')
+                                td.appendChild(text)
+                                linha.appendChild(td)
+
+                                td = document.createElement('td')
+                                text = document.createTextNode(provento.total)
+                                td.appendChild(text)
+                                linha.appendChild(td)
+
+                                tabelaBensDireitosCreditosEmTransito.append(linha)
+
+                            })
+
+                    })
+
+                })
+
+        }
+
+        const buscarLucrosPrejuizos = async () => {
+
+            const options = {
+                method: 'GET',
+                mode: 'cors',
+                cache: 'default'
+            }
+
+            const url = `http://localhost:3333/irpf/lucrosPrejuizos`
+
+            fetch(url)
+                .then((resp) => resp.json())
+                .then((mes) => {
+
+                    let somaLucros = 0;
+
+                    mes.forEach(async mes => {
+
+                        if (mes.resultado > 0) {
+                            somaLucros += mes.resultado
+                        } else {
+
+                            let td
+                            let text
+                            let linha
+
+                            linha = document.createElement('tr')
+                            td = document.createElement('td')
+                            text = document.createTextNode(mes.mes)
+                            td.appendChild(text)
+                            linha.appendChild(td)
+
+                            td = document.createElement('td')
+                            text = document.createTextNode(mes.resultado)
+                            td.appendChild(text)
+                            linha.appendChild(td)
+
+                            tabelaPrejuizosVendaAcoes.append(linha)
+
+                        }
+
+                    })
+
+                    let td
+                    let text
+                    let linha
+
+                    linha = document.createElement('tr')
+                    td = document.createElement('td')
+                    text = document.createTextNode('20')
+                    td.appendChild(text)
+                    linha.appendChild(td)
+
+                    td = document.createElement('td')
+                    text = document.createTextNode(somaLucros)
+                    td.appendChild(text)
+                    linha.appendChild(td)
+
+                    tabelaLucrosVendaAcoes.append(linha)
+
+                })
+
+        }
+
+        buscaInformacoesAcoes()
+        buscaInformacoesCreditosEmTransito()
+        buscarLucrosPrejuizos()
+
+    </script>
+</body>
+
+</html>
